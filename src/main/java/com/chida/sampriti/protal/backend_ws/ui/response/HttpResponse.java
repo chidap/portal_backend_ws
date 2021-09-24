@@ -7,7 +7,7 @@ public class HttpResponse {
     private String message;
 
     public HttpResponse() {}
-    
+
     public HttpResponse(int httpStatusCode, String httpStatus, String reason, String message) {
         this.httpStatusCode = httpStatusCode;
         this.httpStatus = httpStatus;
