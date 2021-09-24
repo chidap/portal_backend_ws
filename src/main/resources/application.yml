@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/portal_db
-    password: chids123
     username: chids_p
+    password: Harrier#0252
+    url: jdbc:mysql://localhost:3306/portal_db?createDatabaseIfNotExist=true
   jpa:
     show-sql: true
     hibernate:
