@@ -1,14 +1,16 @@
 package com.chida.sampriti.protal.backend_ws.ui.response;
 
+import org.springframework.http.HttpStatus;
+
 public class HttpResponse {
     private int httpStatusCode;
-    private String httpStatus;
+    private HttpStatus httpStatus;
     private String reason;
     private String message;
 
     public HttpResponse() {}
 
-    public HttpResponse(int httpStatusCode, String httpStatus, String reason, String message) {
+    public HttpResponse(int httpStatusCode, HttpStatus httpStatus, String reason, String message) {
         this.httpStatusCode = httpStatusCode;
         this.httpStatus = httpStatus;
         this.reason = reason;
@@ -23,11 +25,11 @@ public class HttpResponse {
         this.httpStatusCode = httpStatusCode;
     }
 
-    public String getHttpStatus() {
+    public HttpStatus getHttpStatus() {
         return httpStatus;
     }
 
-    public void setHttpStatus(String httpStatus) {
+    public void setHttpStatus(HttpStatus httpStatus) {
         this.httpStatus = httpStatus;
     }
 
