@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         String password = generatePassword();
         String encodedPassword = encodePassword(password);
         userDetails.setDateOfJoin(new Date());
-        userDetails.setEncryptedPassword(encodedPassword);
+        userDetails.setPassword(encodedPassword);
         userDetails.setActive(true);
         userDetails.setNotLocked(true);
         userDetails.setRole(Role.ROLE_USER.name());

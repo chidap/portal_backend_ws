@@ -24,7 +24,7 @@ public class UserEntity implements Serializable {
     @Column(nullable = false, length = 20)
     private String userName;
     @Column(nullable = false)
-    private String encryptedPassword;
+    private String password;
     private String profileImageUrl;
     private Date lastLoginDate;
     private Date lastLoginDateDisplay;
@@ -44,7 +44,7 @@ public class UserEntity implements Serializable {
             String lastName,
             String email,
             String userName,
-            String encryptedPassword,
+            String password,
             String profileImageUrl,
             Date lastLoginDate,
             Date lastLoginDateDisplay,
@@ -60,7 +60,7 @@ public class UserEntity implements Serializable {
         this.lastName = lastName;
         this.email = email;
         this.userName = userName;
-        this.encryptedPassword = encryptedPassword;
+        this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.lastLoginDate = lastLoginDate;
         this.lastLoginDateDisplay = lastLoginDateDisplay;
@@ -119,12 +119,12 @@ public class UserEntity implements Serializable {
         this.userName = userName;
     }
 
-    public String getEncryptedPassword() {
-        return encryptedPassword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getProfileImageUrl() {

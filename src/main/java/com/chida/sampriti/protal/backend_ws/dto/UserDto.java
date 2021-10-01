@@ -11,7 +11,6 @@ public class UserDto implements Serializable {
     private String email;
     private String userName;
     private String password;
-    private String encryptedPassword;
     private String profileImageUrl;
     private Date lastLoginDate;
     private Date lastLoginDateDisplay;
@@ -32,7 +31,6 @@ public class UserDto implements Serializable {
             String email,
             String userName,
             String password,
-            String encryptedPassword,
             String profileImageUrl,
             Date lastLoginDate,
             Date lastLoginDateDisplay,
@@ -48,7 +46,6 @@ public class UserDto implements Serializable {
         this.email = email;
         this.userName = userName;
         this.password = password;
-        this.encryptedPassword = encryptedPassword;
         this.profileImageUrl = profileImageUrl;
         this.lastLoginDate = lastLoginDate;
         this.lastLoginDateDisplay = lastLoginDateDisplay;
@@ -105,14 +102,6 @@ public class UserDto implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getEncryptedPassword() {
-        return encryptedPassword;
-    }
-
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
     }
 
     public String getProfileImageUrl() {
