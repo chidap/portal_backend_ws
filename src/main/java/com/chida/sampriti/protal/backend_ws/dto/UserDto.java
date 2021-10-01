@@ -15,8 +15,8 @@ public class UserDto implements Serializable {
     private String profileImageUrl;
     private Date lastLoginDate;
     private Date lastLoginDateDisplay;
-    private Date dateOfBirth;
-    private String[] roles;  // ROLE_USER { read, edit }, ROLE_ADMIN { delete }
+    private Date dateOfJoin;
+    private String role;  // ROLE_USER { read, edit }, ROLE_ADMIN { delete }
     private String[] authorities;
     private boolean isActive;
     private boolean isNotLocked;
@@ -36,8 +36,8 @@ public class UserDto implements Serializable {
             String profileImageUrl,
             Date lastLoginDate,
             Date lastLoginDateDisplay,
-            Date dateOfBirth,
-            String[] roles,
+            Date dateOfJoin,
+            String role,
             String[] authorities,
             boolean isActive,
             boolean isNotLocked
@@ -52,8 +52,8 @@ public class UserDto implements Serializable {
         this.profileImageUrl = profileImageUrl;
         this.lastLoginDate = lastLoginDate;
         this.lastLoginDateDisplay = lastLoginDateDisplay;
-        this.dateOfBirth = dateOfBirth;
-        this.roles = roles;
+        this.dateOfJoin = dateOfJoin;
+        this.role = role;
         this.authorities = authorities;
         this.isActive = isActive;
         this.isNotLocked = isNotLocked;
@@ -139,20 +139,20 @@ public class UserDto implements Serializable {
         this.lastLoginDateDisplay = lastLoginDateDisplay;
     }
 
-    public Date getDateOfBirth() {
-        return dateOfBirth;
+    public Date getDateOfJoin() {
+        return dateOfJoin;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+    public void setDateOfJoin(Date dateOfJoin) {
+        this.dateOfJoin = dateOfJoin;
     }
 
-    public String[] getRoles() {
-        return roles;
+    public String getRole() {
+        return role;
     }
 
-    public void setRoles(String[] roles) {
-        this.roles = roles;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String[] getAuthorities() {

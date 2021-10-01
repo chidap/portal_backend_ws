@@ -1,30 +1,12 @@
-package com.chida.sampriti.protal.backend_ws.data;
+package com.chida.sampriti.protal.backend_ws.ui.model;
 
-import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Date;
 
-@Entity
-@Table(name = "user_info")
-public class UserEntity implements Serializable {
-
-    private static final long serialVersionUID = 1359334330052187479L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(nullable = false, updatable = false)
-    private long Id;
-    @Column(nullable = false)
-    private String memberId;
-    @Column(nullable = false, length = 30)
+public class CreateUserResponseModel {
     private String firstName;
-    @Column(nullable = false, length = 30)
     private String lastName;
-    @Column(nullable = false, length = 60)
     private String email;
-    @Column(nullable = false, length = 20)
     private String userName;
-    @Column(nullable = false)
-    private String encryptedPassword;
     private String profileImageUrl;
     private Date lastLoginDate;
     private Date lastLoginDateDisplay;
@@ -34,33 +16,25 @@ public class UserEntity implements Serializable {
     private boolean isActive;
     private boolean isNotLocked;
 
-    public UserEntity() {
+    public CreateUserResponseModel() {
     }
 
-    public UserEntity(
-            long id,
-            String memberId,
-            String firstName,
-            String lastName,
-            String email,
-            String userName,
-            String encryptedPassword,
-            String profileImageUrl,
-            Date lastLoginDate,
-            Date lastLoginDateDisplay,
-            Date dateOfJoin,
-            String role,
-            String[] authorities,
-            boolean isActive,
-            boolean isNotLocked
-        ) {
-        Id = id;
-        this.memberId = memberId;
+    public CreateUserResponseModel(String firstName,
+                                   String lastName,
+                                   String email,
+                                   String userName,
+                                   String profileImageUrl,
+                                   Date lastLoginDate,
+                                   Date lastLoginDateDisplay,
+                                   Date dateOfJoin,
+                                   String role,
+                                   String[] authorities,
+                                   boolean isActive,
+                                   boolean isNotLocked) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.userName = userName;
-        this.encryptedPassword = encryptedPassword;
         this.profileImageUrl = profileImageUrl;
         this.lastLoginDate = lastLoginDate;
         this.lastLoginDateDisplay = lastLoginDateDisplay;
@@ -69,22 +43,6 @@ public class UserEntity implements Serializable {
         this.authorities = authorities;
         this.isActive = isActive;
         this.isNotLocked = isNotLocked;
-    }
-
-    public long getId() {
-        return Id;
-    }
-
-    public void setId(long id) {
-        Id = id;
-    }
-
-    public String getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
     }
 
     public String getFirstName() {
@@ -117,14 +75,6 @@ public class UserEntity implements Serializable {
 
     public void setUserName(String userName) {
         this.userName = userName;
-    }
-
-    public String getEncryptedPassword() {
-        return encryptedPassword;
-    }
-
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
     }
 
     public String getProfileImageUrl() {

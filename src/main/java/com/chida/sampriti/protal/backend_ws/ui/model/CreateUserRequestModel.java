@@ -1,30 +1,23 @@
-package com.chida.sampriti.protal.backend_ws.data;
+package com.chida.sampriti.protal.backend_ws.ui.model;
 
-import javax.persistence.*;
-import java.io.Serializable;
+
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
-@Entity
-@Table(name = "user_info")
-public class UserEntity implements Serializable {
-
-    private static final long serialVersionUID = 1359334330052187479L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(nullable = false, updatable = false)
-    private long Id;
-    @Column(nullable = false)
-    private String memberId;
-    @Column(nullable = false, length = 30)
+public class CreateUserRequestModel {
+    @NotNull(message = "First name can not be empty")
+    @Size(min = 5, message = "First name should be of minimum 5 characters")
     private String firstName;
-    @Column(nullable = false, length = 30)
+    @NotNull(message = "Last name can not be empty")
+    @Size(min = 2, message = "Last name should be of minimum 2 characters")
     private String lastName;
-    @Column(nullable = false, length = 60)
+    @NotNull(message = "Email can not be empty")
+    @Size(min = 5, message = "Email should be of minimum 5 characters")
     private String email;
-    @Column(nullable = false, length = 20)
     private String userName;
-    @Column(nullable = false)
-    private String encryptedPassword;
+    private String password;
     private String profileImageUrl;
     private Date lastLoginDate;
     private Date lastLoginDateDisplay;
@@ -34,33 +27,27 @@ public class UserEntity implements Serializable {
     private boolean isActive;
     private boolean isNotLocked;
 
-    public UserEntity() {
+    public CreateUserRequestModel() {
     }
 
-    public UserEntity(
-            long id,
-            String memberId,
-            String firstName,
-            String lastName,
-            String email,
-            String userName,
-            String encryptedPassword,
-            String profileImageUrl,
-            Date lastLoginDate,
-            Date lastLoginDateDisplay,
-            Date dateOfJoin,
-            String role,
-            String[] authorities,
-            boolean isActive,
-            boolean isNotLocked
-        ) {
-        Id = id;
-        this.memberId = memberId;
+    public CreateUserRequestModel(String firstName,
+                                  String lastName,
+                                  String email,
+                                  String userName,
+                                  String password,
+                                  String profileImageUrl,
+                                  Date lastLoginDate,
+                                  Date lastLoginDateDisplay,
+                                  Date dateOfJoin,
+                                  String role,
+                                  String[] authorities,
+                                  boolean isActive,
+                                  boolean isNotLocked) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.userName = userName;
-        this.encryptedPassword = encryptedPassword;
+        this.password = password;
         this.profileImageUrl = profileImageUrl;
         this.lastLoginDate = lastLoginDate;
         this.lastLoginDateDisplay = lastLoginDateDisplay;
@@ -69,22 +56,6 @@ public class UserEntity implements Serializable {
         this.authorities = authorities;
         this.isActive = isActive;
         this.isNotLocked = isNotLocked;
-    }
-
-    public long getId() {
-        return Id;
-    }
-
-    public void setId(long id) {
-        Id = id;
-    }
-
-    public String getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(String memberId) {
-        this.memberId = memberId;
     }
 
     public String getFirstName() {
@@ -119,12 +90,12 @@ public class UserEntity implements Serializable {
         this.userName = userName;
     }
 
-    public String getEncryptedPassword() {
-        return encryptedPassword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getProfileImageUrl() {
