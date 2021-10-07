@@ -20,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 
 import static com.chida.sampriti.protal.backend_ws.constant.SecurityConstant.JWT_TOKEN_HEADER;
@@ -40,7 +41,7 @@ public class UserController extends ExceptionHandling {
 
     @PostMapping("/register")
     public ResponseEntity<CreateUserResponseModel> registerUser(@Valid @RequestBody CreateUserRequestModel userDetails)
-            throws UsernameNotFoundException, UsernameExistException, EmailExistException {
+            throws UsernameNotFoundException, UsernameExistException, EmailExistException, MessagingException {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         UserDto newUser = modelMapper.map(userDetails, UserDto.class);

@@ -7,6 +7,7 @@ import com.chida.sampriti.protal.backend_ws.exception.domain.EmailExistException
 import com.chida.sampriti.protal.backend_ws.exception.domain.UsernameExistException;
 import com.chida.sampriti.protal.backend_ws.repository.UserRepository;
 import com.chida.sampriti.protal.backend_ws.security.UserPrincipal;
+import com.chida.sampriti.protal.backend_ws.service.EmailService;
 import com.chida.sampriti.protal.backend_ws.service.LoginAttemptService;
 import com.chida.sampriti.protal.backend_ws.service.UserService;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -24,6 +25,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
@@ -40,14 +42,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private UserRepository userRepository;
     private BCryptPasswordEncoder passwordEncoder;
     private LoginAttemptService loginAttemptService;
+    private EmailService emailService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            BCryptPasswordEncoder passwordEncoder,
-                           LoginAttemptService loginAttemptService ) {
+                           LoginAttemptService loginAttemptService,
+                           EmailService emailService ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.loginAttemptService = loginAttemptService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public UserDto registerUser(UserDto userDetails) throws UsernameNotFoundException, EmailExistException, UsernameExistException {
+    public UserDto registerUser(UserDto userDetails) throws UsernameNotFoundException, EmailExistException, UsernameExistException, MessagingException {
         validateNewUsernameAndEmail(StringUtils.EMPTY, userDetails.getUserName(), userDetails.getEmail());
         userDetails.setMemberId(generateMemberId());
         String password = generatePassword();
@@ -102,6 +107,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userRepository.save(userEntity);
         LOGGER.info("New user password: " + password);
         UserDto returnValue = modelMapper.map(userEntity, UserDto.class);
+        emailService.sendNewPasswordEmail(userDetails.getFirstName(), password, userDetails.getEmail());
         return returnValue;
     }
 
