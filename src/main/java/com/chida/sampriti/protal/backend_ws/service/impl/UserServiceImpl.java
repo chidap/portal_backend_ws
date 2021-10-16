@@ -4,12 +4,14 @@ import com.chida.sampriti.protal.backend_ws.data.UserEntity;
 import com.chida.sampriti.protal.backend_ws.dto.UserDto;
 import com.chida.sampriti.protal.backend_ws.enumeration.Role;
 import com.chida.sampriti.protal.backend_ws.exception.domain.EmailExistException;
+import com.chida.sampriti.protal.backend_ws.exception.domain.EmailNotFoundException;
 import com.chida.sampriti.protal.backend_ws.exception.domain.UsernameExistException;
 import com.chida.sampriti.protal.backend_ws.repository.UserRepository;
 import com.chida.sampriti.protal.backend_ws.security.UserPrincipal;
 import com.chida.sampriti.protal.backend_ws.service.EmailService;
 import com.chida.sampriti.protal.backend_ws.service.LoginAttemptService;
 import com.chida.sampriti.protal.backend_ws.service.UserService;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
@@ -23,16 +25,24 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.mail.MessagingException;
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static com.chida.sampriti.protal.backend_ws.constant.FileConstant.*;
 import static com.chida.sampriti.protal.backend_ws.constant.UserImplConstant.*;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Service
 @Transactional
@@ -92,14 +102,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         validateNewUsernameAndEmail(StringUtils.EMPTY, userDetails.getUserName(), userDetails.getEmail());
         userDetails.setMemberId(generateMemberId());
         String password = generatePassword();
-        String encodedPassword = encodePassword(password);
         userDetails.setDateOfJoin(new Date());
-        userDetails.setPassword(encodedPassword);
+        userDetails.setPassword(encodePassword(password));
         userDetails.setActive(true);
         userDetails.setNotLocked(true);
         userDetails.setRole(Role.ROLE_USER.name());
         userDetails.setAuthorities(Role.ROLE_USER.getAuthorities());
-        userDetails.setProfileImageUrl(getTemporaryProfileImageUrl());
+        userDetails.setProfileImageUrl(getTemporaryProfileImageUrl(userDetails.getUserName()));
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
@@ -111,8 +120,136 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return returnValue;
     }
 
-    private String getTemporaryProfileImageUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
+    @Override
+    public UserDto addUser(UserDto userDetails, MultipartFile profileImage) throws EmailExistException, UsernameExistException, MessagingException, IOException {
+        validateNewUsernameAndEmail(StringUtils.EMPTY, userDetails.getUserName(), userDetails.getEmail());
+        userDetails.setMemberId(generateMemberId());
+        String password = generatePassword();
+        userDetails.setDateOfJoin(new Date());
+        userDetails.setPassword(encodePassword(password));
+        userDetails.setActive(true);
+        userDetails.setNotLocked(true);
+        userDetails.setRole(getRoleEnumName(userDetails.getRole()).name());
+        userDetails.setAuthorities(getRoleEnumName(userDetails.getRole()).getAuthorities());
+        userDetails.setProfileImageUrl(getTemporaryProfileImageUrl(userDetails.getUserName()));
+
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        UserEntity userEntity = modelMapper.map(userDetails, UserEntity.class);
+        userRepository.save(userEntity);
+        saveProfileImage(userDetails, profileImage);
+        LOGGER.info("New user password: " + password);
+        UserDto returnValue = modelMapper.map(userEntity, UserDto.class);
+        emailService.sendNewPasswordEmail(userDetails.getFirstName(), password, userDetails.getEmail());
+        return returnValue;
+    }
+
+
+    @Override
+    public UserDto updateUser(String currentUsername, UserDto userDetails, MultipartFile profileImage) throws EmailExistException, UsernameExistException, MessagingException, IOException {
+        UserDto currentUser = validateNewUsernameAndEmail(currentUsername, userDetails.getUserName(), userDetails.getEmail());
+        userDetails.setRole(getRoleEnumName(userDetails.getRole()).name());
+        userDetails.setAuthorities(getRoleEnumName(userDetails.getRole()).getAuthorities());
+
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        UserEntity userEntity = modelMapper.map(currentUser, UserEntity.class);
+        userRepository.save(userEntity);
+        saveProfileImage(currentUser, profileImage);
+        return currentUser;
+    }
+
+    @Override
+    public List<UserDto> getUser() {
+        List<UserEntity> users = userRepository.findAll();
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        List<UserDto> returnUsers = users.stream().map(user -> modelMapper.map(user, UserDto.class)).collect(Collectors.toList());
+        return returnUsers;
+    }
+
+    @Override
+    public UserDto findUserByUsername(String username) {
+        UserEntity user = userRepository.findUserByUserName(username);
+        if (user != null) {
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+            UserDto returnUser = modelMapper.map(user, UserDto.class);
+            return returnUser;
+        }
+        return null;
+    }
+
+    @Override
+    public UserDto findUserByEmail(String email) {
+        UserEntity user = userRepository.findUserByEmail(email);
+        if (user != null) {
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+            UserDto returnUser = modelMapper.map(user, UserDto.class);
+            return returnUser;
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteUser(String userName) {
+        UserEntity user = userRepository.findUserByUserName(userName);
+        if (user != null) {
+            Long id = user.getId();
+            userRepository.deleteById(id);
+        }
+    }
+
+    @Override
+    public UserDto updateProfileImage(String username, MultipartFile profileImage) throws EmailExistException, UsernameExistException, IOException {
+        UserDto userDto = validateNewUsernameAndEmail(username, null, null);
+        saveProfileImage(userDto, profileImage);
+        return userDto;
+    }
+
+    @Override
+    public void resetPassword(String email) throws MessagingException, EmailNotFoundException {
+        UserEntity userEntity = userRepository.findUserByEmail(email);
+        if(userEntity == null) {
+            throw new EmailNotFoundException(No_USER_FOUND_BY_EMAIL + email);
+        }
+        String password = generatePassword();
+        userEntity.setPassword(encodePassword(password));
+        userRepository.save(userEntity);
+        emailService.sendNewPasswordEmail(userEntity.getFirstName(), password, userEntity.getEmail());
+    }
+
+    private String getTemporaryProfileImageUrl(String username) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
+    }
+
+    private void saveProfileImage(UserDto userDetails, MultipartFile profileImage) throws IOException {
+        if(profileImage != null) {
+            Path userFolder = Paths.get(USER_FOLDER + userDetails.getUserName()).toAbsolutePath().normalize();
+            if(!Files.exists(userFolder)) {
+                Files.createDirectories(userFolder);
+                LOGGER.info(DIRECTORY_CREATED + userFolder);
+            }
+            Files.deleteIfExists(Paths.get(userFolder + userDetails.getUserName() + DOT + JPG_EXTENSION));
+            Files.copy(profileImage.getInputStream(), userFolder.resolve(userDetails.getUserName() + DOT + JPG_EXTENSION),REPLACE_EXISTING);
+            userDetails.setProfileImageUrl(setProfileImageUrl(userDetails.getUserName()));
+
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+            UserEntity userEntity = modelMapper.map(userDetails, UserEntity.class);
+            userRepository.save(userEntity);
+            LOGGER.info(FILE_SAVED_IN_THE_SYSTEM + profileImage.getOriginalFilename());
+        }
+    }
+
+    private String setProfileImageUrl(String userName) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(USER_IMAGE_PATH + userName + FORWARD_SLASH
+        + userName + DOT + JPG_EXTENSION).toUriString();
+    }
+
+    private Role getRoleEnumName(String role) {
+        return Role.valueOf(role.toUpperCase(Locale.ROOT));
     }
 
     private String encodePassword(String password) {
@@ -155,36 +292,4 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
     }
 
-    @Override
-    public List<UserDto> getUser() {
-        List<UserEntity> users = userRepository.findAll();
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        List<UserDto> returnUsers = users.stream().map(user -> modelMapper.map(user, UserDto.class)).collect(Collectors.toList());
-        return returnUsers;
-    }
-
-    @Override
-    public UserDto findUserByUsername(String username) {
-        UserEntity user = userRepository.findUserByUserName(username);
-        if (user != null) {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-            UserDto returnUser = modelMapper.map(user, UserDto.class);
-            return returnUser;
-        }
-        return null;
-    }
-
-    @Override
-    public UserDto findUserByEmail(String email) {
-        UserEntity user = userRepository.findUserByEmail(email);
-        if (user != null) {
-            ModelMapper modelMapper = new ModelMapper();
-            modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-            UserDto returnUser = modelMapper.map(user, UserDto.class);
-            return returnUser;
-        }
-        return null;
-    }
 }
